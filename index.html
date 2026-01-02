@@ -1,180 +1,166 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Suivi de Budget</title>
-  <meta name="theme-color" content="#0f172a">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="icon" sizes="192x192" href="icons/icon-192.png">
-  <link rel="icon" sizes="512x512" href="icons/icon-512.png">
-  <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase SDK exposé sur window._fb (remplacer la config) -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
+  <!-- Styles optionnels -->
+  styles.css
 
-    // 👉 REMPLACE ICI PAR TA CONFIG FIREBASE
-    const firebaseConfig = {
-      apiKey: "AIzaSyAuEDYAueA4mNTDahmJgyESeQPR-0NxvR0",
-      authDomain: "budget-app-febce.firebaseapp.com",
-      projectId: "budget-app-febce",
-      appId: "1:45135884864:web:e92bec700bec7935fea5a5"
-    };
-
-    // Si la config n'est pas renseignée, on n'initialise pas Firebase
-    let app, auth, db;
-    try {
-      if (!firebaseConfig.apiKey.includes('REMPLACE')) {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-      }
-    } catch (e) {
-      console.warn('Firebase init skipped:', e);
-    }
-
-    window._fb = { app, auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, getDoc, setDoc, onSnapshot };
-  </script>
+  <!-- PWA (facultatif) -->
+  <link rel="manifest" href="manifestolor" content="#0ea5e9" />
 </head>
 <body>
-  <div class="app">
-    <header class="app-header">
-      <div class="period-picker">
-        <label for="yearSelect">Période :</label>
-        <select id="periodSelect"></select>
-      </div>
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
-        <div id="authStatus" class="chip">Hors ligne</div>
-        <button id="addCategoryBtn" class="btn btn-primary btn-icon"><span class="icon">＋</span> Catégorie</button>
-      </div>
-    </header>
+  <header class="app-header">
+    <h1>Suivi de Budget</h1>
+    <div class="period-picker">
+      <!-- Select année (injecté/actualisé par script.js) -->
+      <!-- Le code crée #yearSelect dynamiquement -->
+      <label for="periodSelect">Période :</label>
+      <select id="periodSelect" aria-label="Mois"></select>
+      <span id="authStatus" class="status-chip">Hors ligne</span>
+    </div>
+  </header>
 
+  <main>
+    <!-- Actions -->
     <section class="actions">
-      <button id="addExpenseBtn" class="btn btn-accent btn-plus-large" title="Ajouter une dépense">＋</button>
+      <button id="addCategoryBtn" class="btn btn-primary">＋ Catégorie</button>
+      <button id="addExpenseBtn" class="btn btn-secondary">＋ Dépense</button>
     </section>
 
+    <!-- Catégories mensuelles -->
     <section class="section">
       <h2>Catégories mensuelles</h2>
-      <div id="monthlySummary" class="summary-table"></div>
+      <div id="monthlySummary"></div>
     </section>
 
+    <!-- Budget global mensuel -->
     <section class="section">
       <h2>Budget global mensuel</h2>
       <div id="globalCards" class="cards"></div>
-      <div id="globalChart" class="donut-wrapper big"></div>
+      <div id="globalChart"></div>
     </section>
 
+    <!-- Catégories annuelles -->
     <section class="section">
       <h2>Catégories annuelles</h2>
-      <div id="annualSummary" class="summary-table"></div>
+      <div id="annualSummary"></div>
     </section>
 
+    <!-- Diagrammes par catégorie mensuelle -->
     <section class="section">
       <h2>Diagrammes par catégorie mensuelle</h2>
-      <div id="monthlyMiniCharts" class="donut-grid"></div>
+      <div id="monthlyMiniCharts" class="mini-charts"></div>
     </section>
+  </main>
 
-    <!-- Modale : Ajouter une catégorie -->
-    <div id="modalCategory" class="modal hidden">
-      <div class="modal-content">
-        <h3>Créer une catégorie</h3>
-        <form id="categoryForm">
-          <div class="form-row">
-            <label for="catName">Intitulé</label>
-            <input id="catName" type="text" required placeholder="Ex. Logement">
-          </div>
-          <div class="form-row">
-            <label for="catBudget">Budget (€)</label>
-            <input id="catBudget" type="number" step="0.01" min="0" required placeholder="Ex. 1200">
-          </div>
-          <div class="form-row">
-            <label for="catType">Type</label>
-            <select id="catType" required>
-              <option value="mensuel">Mensuel</option>
-              <option value="annuel">Annuel</option>
-            </select>
-          </div>
-          <div class="modal-actions">
-            <button type="submit" class="btn btn-primary">Valider</button>
-            <button type="button" class="btn btn-ghost" data-close="#modalCategory">Annuler</button>
-          </div>
-        </form>
-      </div>
+  <!-- Toast / notifications brèves -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- ====================== Modales ====================== -->
+
+  <!-- Modal : Créer une catégorie -->
+  <div id="modalCategory" class="modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalCategoryTitle">
+      <h3 id="modalCategoryTitle">Créer une catégorie</h3>
+      <form id="categoryForm">
+        <div class="form-row">
+          <label for="catName">Intitulé</label>
+          <input id="catName" type="text" placeholder="Ex: Logement" required />
+        </div>
+        <div class="form-row">
+          <label for="catBudget">Budget (€)</label>
+          <input id="catBudget" type="number" step="0.01" min="0" placeholder="0.00" required />
+        </div>
+        <div class="form-row">
+          <label for="catType">Type</label>
+          <select id="catType" required>
+            <option value="mensuel">Mensuel</option>
+            <option value="annuel">Annuel</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Valider</button>
+          <button type="button" class="btn btn-ghost" data-close="#modalCategory">Annuler</button>
+        </div>
+      </form>
     </div>
-
-    <!-- Modale : Ajouter une dépense -->
-    <div id="modalExpense" class="modal hidden">
-      <div class="modal-content">
-        <h3>Ajouter une dépense</h3>
-        <form id="expenseForm">
-          <div class="form-row">
-            <label for="expDate">Date</label>
-            <input id="expDate" type="date" required>
-          </div>
-          <div class="form-row">
-            <label for="expCategory">Catégorie</label>
-            <select id="expCategory" required></select>
-          </div>
-          <div class="form-row">
-            <label for="expName">Intitulé</label>
-            <input id="expName" type="text" required placeholder="Ex. Loyer">
-          </div>
-          <div class="form-row">
-            <label for="expAmount">Montant (€)</label>
-            <input id="expAmount" type="number" step="0.01" min="0" required placeholder="Ex. 950">
-          </div>
-          <div class="modal-actions">
-            <button type="submit" class="btn btn-primary">Imputer</button>
-            <button type="button" class="btn btn-ghost" data-close="#modalExpense">Annuler</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modale : Auth Firebase -->
-    <div id="modalAuth" class="modal hidden">
-      <div class="modal-content">
-        <h3>Connexion</h3>
-        <form id="authForm">
-          <div class="form-row">
-            <label for="authEmail">Email</label>
-            <input id="authEmail" type="email" required placeholder="budget@famille.fr">
-          </div>
-          <div class="form-row">
-            <label for="authPass">Mot de passe</label>
-            <input id="authPass" type="password" required placeholder="Mot de passe">
-          </div>
-          <div class="modal-actions">
-            <button type="submit" class="btn btn-primary">Se connecter</button>
-            <button type="button" class="btn btn-ghost" id="authCreate">Créer le compte</button>
-            <button type="button" class="btn btn-ghost" data-close="#modalAuth">Fermer</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Toast -->
-    <div id="toast" class="toast hidden"></div>
   </div>
 
-  <!-- SW registration -->
+  <!-- Modal : Ajouter une dépense -->
+  <div id="modalExpense" class="modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalExpenseTitle">
+      <h3 id="modalExpenseTitle">Ajouter une dépense</h3>
+      <form id="expenseForm">
+        <div class="form-row">
+          <label for="expDate">Date</label>
+          <input id="expDate" type="date" required />
+        </div>
+        <div class="form-row">
+          <label for="expCategory">Catégorie</label>
+          <select id="expCategory" required></select>
+        </div>
+        <div class="form-row">
+          <label for="expName">Intitulé</label>
+          <input id="expName" type="text" required />
+        </div>
+        <div class="form-row">
+          <label for="expAmount">Montant (€)</label>
+          <input id="expAmount" type="number" step="0.01" min="0" required />
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Imputer</button>
+          <button type="button" class="btn btn-ghost" data-close="#modalExpense">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal : Connexion -->
+  <div id="modalAuth" class="modal hidden" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalAuthTitle">
+      <h3 id="modalAuthTitle">Connexion</h3>
+      <form id="authForm">
+        <div class="form-row">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" type="email" autocomplete="username" required />
+        </div>
+        <div class="form-row">
+          <label for="authPass">Mot de passe</label>
+          <input id="authPass" type="password" autocomplete="current-password" required />
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Se connecter</button>
+          <button type="button" id="authCreate" class="btn btn-secondary">Créer le compte</button>
+          <button type="button" class="btn btn-ghost" data-close="#modalAuth">Fermer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================== Scripts ====================== -->
+
+  <!-- ⚠️ Ordre d'inclusion : Firebase d'abord (expose window._fb), puis ton app -->
+  firebase-bootstrap.js</script>
+  script.js</script>
+
+  <!-- (Optionnel) Service Worker d’app — seulement si tu en as un et que tu veux PWA -->
+  <!--
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
+      window.addEventListener('load', async () => {
+        try {
+          await navigator.serviceWorker.register('/service-worker.js');
+          console.log('Service Worker enregistré');
+        } catch (e) {
+          console.error('SW échec:', e);
+        }
       });
     }
   </script>
-  <script src="script.js" type="module"></script>
+  -->
 </body>
 </html>
-
-
-<!-- Firebase bootstrap -->
-firebase-bootstrap.js</script>
-<!-- Ton script principal -->
-script.js</script>

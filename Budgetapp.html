@@ -1,0 +1,105 @@
+
+<div class="app">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="period-picker">
+      <label for="periodSelect">Période&nbsp;:</label>
+      <select id="periodSelect"></select>
+    </div>
+    <button id="addCategoryBtn" class="btn btn-primary btn-icon">
+      <span class="icon">＋</span> Catégorie
+    </button>
+  </header>
+
+  <!-- Actions -->
+  <section class="actions">
+    <button id="addExpenseBtn" class="btn btn-accent btn-plus-large" title="Ajouter une dépense">
+      ＋
+    </button>
+  </section>
+
+  <!-- Résumé mensuel -->
+  <section class="section">
+    <h2>Catégories mensuelles</h2>
+    <div id="monthlySummary" class="summary-table"></div>
+  </section>
+
+  <!-- Vue globale -->
+  <section class="section">
+    <h2>Budget global (mois + annuel de l'année)</h2>
+    <div id="globalCards" class="cards"></div>
+    <div id="globalChart" class="donut-wrapper big"></div>
+  </section>
+
+  <!-- Résumé annuel -->
+  <section class="section">
+    <h2>Catégories annuelles</h2>
+    <div id="annualSummary" class="summary-table"></div>
+  </section>
+
+  <!-- Mini-diagrammes catégories mensuelles -->
+  <section class="section">
+    <h2>Diagrammes par catégorie mensuelle</h2>
+    <div id="monthlyMiniCharts" class="donut-grid"></div>
+  </section>
+
+  <!-- Modale : Ajouter une catégorie -->
+  <div id="modalCategory" class="modal hidden">
+    <div class="modal-content">
+      <h3>Créer une catégorie</h3>
+      <form id="categoryForm">
+        <div class="form-row">
+          <label for="catName">Intitulé</label>
+          <input id="catName" type="text" required placeholder="Ex. Logement">
+        </div>
+        <div class="form-row">
+          <label for="catBudget">Budget (€)</label>
+          <input id="catBudget" type="number" step="0.01" min="0" required placeholder="Ex. 1200">
+        </div>
+        <div class="form-row">
+          <label for="catType">Type</label>
+          <select id="catType" required>
+            <option value="mensuel">Mensuel</option>
+            <option value="annuel">Annuel</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Valider</button>
+          <button type="button" class="btn btn-ghost" data-close="#modalCategory">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modale : Ajouter une dépense -->
+  <div id="modalExpense" class="modal hidden">
+    <div class="modal-content">
+      <h3>Ajouter une dépense</h3>
+      <form id="expenseForm">
+        <div class="form-row">
+          <label for="expDate">Date</label>
+          <input id="expDate" type="date" required>
+        </div>
+        <div class="form-row">
+          <label for="expCategory">Catégorie</label>
+          <select id="expCategory" required></select>
+        </div>
+        <div class="form-row">
+          <label for="expName">Intitulé</label>
+          <input id="expName" type="text" required placeholder="Ex. Loyer">
+        </div>
+        <div class="form-row">
+          <label for="expAmount">Montant (€)</label>
+          <input id="expAmount" type="number" step="0.01" min="0" required placeholder="Ex. 950">
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Imputer</button>
+          <button type="button" class="btn btn-ghost" data-close="#modalExpense">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+</div>

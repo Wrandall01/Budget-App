@@ -1,47 +1,78 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Suivi de Budget</title>
-  <meta name="theme-color" content="#0f172a">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="icon" sizes="192x192" href="icons/icon-192.png">
-  <link rel="icon" sizes="512x512" href="icons/icon-512.png">
-  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#0f172a" />
 
-  <!-- Firebase SDK exposé sur window._fb (remplacer la config) -->
+  <!-- PWA (facultatif si déjà en place) -->
+  manifest.webmanifest
+  <link rel="apple-touch-icon  icons/icon-192.png
+  <link rel="icon" sizes="512Style -->
+  style.css
+
+  <!-- Firebase SDKs (module) + Persistance longue durée -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signOut,
+      setPersistence,
+      browserLocalPersistence
+    } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
+    import {
+      getFirestore,
+      doc, getDoc, setDoc, onSnapshot
+    } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
-    // 👉 REMPLACE ICI PAR TA CONFIG FIREBASE
+    // 👉 REMPLACE par ta **vraie** config Firebase
     const firebaseConfig = {
-      apiKey: "AIzaSyAuEDYAueA4mNTDahmJgyESeQPR-0NxvR0",
-      authDomain: "budget-app-febce.firebaseapp.com",
-      projectId: "budget-app-febce",
-      appId: "1:45135884864:web:e92bec700bec7935fea5a5"
+      apiKey: "TA_VRAIE_API_KEY",
+      authDomain: "TON_PROJET.firebaseapp.com",
+      projectId: "TON_PROJET",
+      appId: "1:XXXXXXXXXXXX:web:XXXXXXXXXXXX"
     };
 
-    // Si la config n'est pas renseignée, on n'initialise pas Firebase
     let app, auth, db;
     try {
-      if (!firebaseConfig.apiKey.includes('REMPLACE')) {
+      if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('REMPLACE')) {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
+
+        // ✅ Persistance locale (session restaurée automatiquement)
+        (async () => {
+          try {
+            await setPersistence(auth, browserLocalPersistence);
+            console.log('Persistance locale activée');
+          } catch (err) {
+            console.warn('Erreur persistance:', err);
+          }
+        })();
       }
     } catch (e) {
       console.warn('Firebase init skipped:', e);
     }
 
-    window._fb = { app, auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, getDoc, setDoc, onSnapshot };
+    // Expose minimal globals
+    window._fb = {
+      app, auth, db,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signOut,
+      doc, getDoc, setDoc, onSnapshot
+    };
   </script>
 </head>
 <body>
   <div class="app">
+    <!-- Header -->
     <header class="app-header">
       <div class="period-picker">
         <label for="yearSelect">Période :</label>
@@ -49,30 +80,37 @@
       </div>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
         <div id="authStatus" class="chip">Hors ligne</div>
-        <button id="addCategoryBtn" class="btn btn-primary btn-icon"><span class="icon">＋</span> Catégorie</button>
+        <button id="addCategoryBtn" class="btn btn-primary btn-icon">
+          <span class="icon">＋</span> Catégorie
+        </button>
       </div>
     </header>
 
+    <!-- Actions -->
     <section class="actions">
       <button id="addExpenseBtn" class="btn btn-accent btn-plus-large" title="Ajouter une dépense">＋</button>
     </section>
 
+    <!-- Résumé mensuel -->
     <section class="section">
       <h2>Catégories mensuelles</h2>
       <div id="monthlySummary" class="summary-table"></div>
     </section>
 
+    <!-- Global mensuel -->
     <section class="section">
       <h2>Budget global mensuel</h2>
       <div id="globalCards" class="cards"></div>
       <div id="globalChart" class="donut-wrapper big"></div>
     </section>
 
+    <!-- Résumé annuel -->
     <section class="section">
       <h2>Catégories annuelles</h2>
       <div id="annualSummary" class="summary-table"></div>
     </section>
 
+    <!-- Mini-diagrammes mensuels -->
     <section class="section">
       <h2>Diagrammes par catégorie mensuelle</h2>
       <div id="monthlyMiniCharts" class="donut-grid"></div>
@@ -85,11 +123,11 @@
         <form id="categoryForm">
           <div class="form-row">
             <label for="catName">Intitulé</label>
-            <input id="catName" type="text" required placeholder="Ex. Logement">
+            <input id="catName" type="text" required placeholder="Ex. Logement" />
           </div>
           <div class="form-row">
             <label for="catBudget">Budget (€)</label>
-            <input id="catBudget" type="number" step="0.01" min="0" required placeholder="Ex. 1200">
+            <input id="catBudget" type="number" step="0.01" min="0" required placeholder="Ex. 1200" />
           </div>
           <div class="form-row">
             <label for="catType">Type</label>
@@ -113,7 +151,7 @@
         <form id="expenseForm">
           <div class="form-row">
             <label for="expDate">Date</label>
-            <input id="expDate" type="date" required>
+            <input id="expDate" type="date" required />
           </div>
           <div class="form-row">
             <label for="expCategory">Catégorie</label>
@@ -121,11 +159,11 @@
           </div>
           <div class="form-row">
             <label for="expName">Intitulé</label>
-            <input id="expName" type="text" required placeholder="Ex. Loyer">
+            <input id="expName" type="text" required placeholder="Ex. Loyer" />
           </div>
           <div class="form-row">
             <label for="expAmount">Montant (€)</label>
-            <input id="expAmount" type="number" step="0.01" min="0" required placeholder="Ex. 950">
+            <input id="expAmount" type="number" step="0.01" min="0" required placeholder="Ex. 950" />
           </div>
           <div class="modal-actions">
             <button type="submit" class="btn btn-primary">Imputer</button>
@@ -142,11 +180,11 @@
         <form id="authForm">
           <div class="form-row">
             <label for="authEmail">Email</label>
-            <input id="authEmail" type="email" required placeholder="budget@famille.fr">
+            <input id="authEmail" type="email" required placeholder="budget@famille.fr" />
           </div>
           <div class="form-row">
             <label for="authPass">Mot de passe</label>
-            <input id="authPass" type="password" required placeholder="Mot de passe">
+            <input id="authPass" type="password" required placeholder="Mot de passe" />
           </div>
           <div class="modal-actions">
             <button type="submit" class="btn btn-primary">Se connecter</button>
@@ -161,7 +199,7 @@
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <!-- SW registration -->
+  <!-- PWA: enregistrement du Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -169,6 +207,8 @@
       });
     }
   </script>
-  <script src="script.js" type="module"></script>
+
+  <!-- App -->
+  script.js</script>
 </body>
 </html>

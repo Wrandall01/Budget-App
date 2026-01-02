@@ -7,13 +7,11 @@
   <title>Suivi de Budget</title>
   <meta name="theme-color" content="#0f172a" />
 
-  <!-- PWA (facultatif si déjà en place) -->
+  <!-- PWA (si tu utilises manifest + SW) -->
   manifest.webmanifest
-  <link rel="apple-touch-icon  icons/icon-192.png
-  <link rel="icon" sizes="512Style -->
-  style.css
-
-  <!-- Firebase SDKs (module) + Persistance longue durée -->
+  icons/apple-touch-icon.png
+  icons/icon-192.png
+  <link rel="icon" sizes="512x512" href="icons/icon-512!-- Firebase SDKs (module) + Persistance longue durée -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
     import {
@@ -30,36 +28,35 @@
       doc, getDoc, setDoc, onSnapshot
     } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
-    // 👉 REMPLACE par ta **vraie** config Firebase
+    /* === TA CONFIG — fournie par toi === */
     const firebaseConfig = {
-      apiKey: "TA_VRAIE_API_KEY",
-      authDomain: "TON_PROJET.firebaseapp.com",
-      projectId: "TON_PROJET",
-      appId: "1:XXXXXXXXXXXX:web:XXXXXXXXXXXX"
+      apiKey: "AIzaSyAuEDYAueA4mNTDahmJgyESeQPR-0NxvR0",
+      authDomain: "budget-app-febce.firebaseapp.com",
+      projectId: "budget-app-febce",
+      appId: "1:45135884864:web:e92bec700bec7935fea5a5"
+      // (storageBucket et messagingSenderId ne sont pas requis pour notre app)
     };
 
     let app, auth, db;
     try {
-      if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('REMPLACE')) {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
+      app  = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db   = getFirestore(app);
 
-        // ✅ Persistance locale (session restaurée automatiquement)
-        (async () => {
-          try {
-            await setPersistence(auth, browserLocalPersistence);
-            console.log('Persistance locale activée');
-          } catch (err) {
-            console.warn('Erreur persistance:', err);
-          }
-        })();
-      }
+      // ✅ Persistance locale (session restaurée automatiquement entre refresh et fermetures)
+      (async () => {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+          console.log('Persistance locale activée');
+        } catch (err) {
+          console.warn('Erreur persistance:', err);
+        }
+      })();
     } catch (e) {
       console.warn('Firebase init skipped:', e);
     }
 
-    // Expose minimal globals
+    // Expose minimal globals pour script.js
     window._fb = {
       app, auth, db,
       onAuthStateChanged,
@@ -79,7 +76,7 @@
         <select id="periodSelect"></select>
       </div>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
-        <div id="authStatus" class="chip">Hors ligne</div>
+        <div id="authStatus" class="chip">Non connecté</div>
         <button id="addCategoryBtn" class="btn btn-primary btn-icon">
           <span class="icon">＋</span> Catégorie
         </button>
@@ -199,7 +196,7 @@
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <!-- PWA: enregistrement du Service Worker -->
+  <!-- PWA: enregistrement du Service Worker (si utilisé) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -208,7 +205,7 @@
     }
   </script>
 
-  <!-- App -->
+  <!-- App principale -->
   script.js</script>
 </body>
 </html>

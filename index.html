@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Suivi de Budget</title>
   <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" sizes="512x512" href="icons/icon-512.png" />
+  <link rel="stylesheet" href="style.css" />
 
-  <!-- PWA (facultatif si déjà en place) -->
-  manifest.webmanifest
-  <link rel="apple-touch-icon  icons/icon-192.png
-  <link rel="icon" sizes="512Style -->
-  style.css
-
-  <!-- Firebase SDKs (module) + Persistance longue durée -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
     import {
@@ -25,12 +22,8 @@
       setPersistence,
       browserLocalPersistence
     } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
-    import {
-      getFirestore,
-      doc, getDoc, setDoc, onSnapshot
-    } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
-    // 👉 REMPLACE par ta **vraie** config Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAuEDYAueA4mNTDahmJgyESeQPR-0NxvR0",
       authDomain: "budget-app-febce.firebaseapp.com",
@@ -40,83 +33,56 @@
 
     let app, auth, db;
     try {
-      if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('REMPLACE')) {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
+      app  = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db   = getFirestore(app);
+      (async () => {
+        try { await setPersistence(auth, browserLocalPersistence); }
+        catch (err) { console.warn('Erreur persistance:', err); }
+      })();
+    } catch (e) { console.warn('Firebase init skipped:', e); }
 
-        // ✅ Persistance locale (session restaurée automatiquement)
-        (async () => {
-          try {
-            await setPersistence(auth, browserLocalPersistence);
-            console.log('Persistance locale activée');
-          } catch (err) {
-            console.warn('Erreur persistance:', err);
-          }
-        })();
-      }
-    } catch (e) {
-      console.warn('Firebase init skipped:', e);
-    }
-
-    // Expose minimal globals
-    window._fb = {
-      app, auth, db,
-      onAuthStateChanged,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      signOut,
-      doc, getDoc, setDoc, onSnapshot
-    };
+    window._fb = { app, auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, getDoc, setDoc, onSnapshot };
   </script>
 </head>
 <body>
   <div class="app">
-    <!-- Header -->
     <header class="app-header">
       <div class="period-picker">
         <label for="yearSelect">Période :</label>
         <select id="periodSelect"></select>
       </div>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
-        <div id="authStatus" class="chip">Hors ligne</div>
-        <button id="addCategoryBtn" class="btn btn-primary btn-icon">
-          <span class="icon">＋</span> Catégorie
-        </button>
+        <div id="authStatus" class="chip">Non connecté</div>
+        <button id="addCategoryBtn" class="btn btn-primary btn-icon"><span class="icon">＋</span> Catégorie</button>
       </div>
     </header>
 
-    <!-- Actions -->
     <section class="actions">
       <button id="addExpenseBtn" class="btn btn-accent btn-plus-large" title="Ajouter une dépense">＋</button>
     </section>
 
-    <!-- Résumé mensuel -->
     <section class="section">
       <h2>Catégories mensuelles</h2>
       <div id="monthlySummary" class="summary-table"></div>
     </section>
 
-    <!-- Global mensuel -->
     <section class="section">
       <h2>Budget global mensuel</h2>
       <div id="globalCards" class="cards"></div>
       <div id="globalChart" class="donut-wrapper big"></div>
     </section>
 
-    <!-- Résumé annuel -->
     <section class="section">
       <h2>Catégories annuelles</h2>
       <div id="annualSummary" class="summary-table"></div>
     </section>
 
-    <!-- Mini-diagrammes mensuels -->
     <section class="section">
       <h2>Diagrammes par catégorie mensuelle</h2>
       <div id="monthlyMiniCharts" class="donut-grid"></div>
     </section>
 
-    <!-- Modale : Ajouter une catégorie -->
     <div id="modalCategory" class="modal hidden">
       <div class="modal-content">
         <h3>Créer une catégorie</h3>
@@ -144,7 +110,6 @@
       </div>
     </div>
 
-    <!-- Modale : Ajouter une dépense -->
     <div id="modalExpense" class="modal hidden">
       <div class="modal-content">
         <h3>Ajouter une dépense</h3>
@@ -173,7 +138,6 @@
       </div>
     </div>
 
-    <!-- Modale : Auth Firebase -->
     <div id="modalAuth" class="modal hidden">
       <div class="modal-content">
         <h3>Connexion</h3>
@@ -195,20 +159,21 @@
       </div>
     </div>
 
-    <!-- Toast -->
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <!-- PWA: enregistrement du Service Worker -->
+  <!-- SW: debug toggle via ?no-sw=1 -->
   <script>
-    if ('serviceWorker' in navigator) {
+    const disableSW = new URLSearchParams(location.search).get('no-sw') === '1';
+    if ('serviceWorker' in navigator && !disableSW) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
       });
+    } else {
+      navigator.serviceWorker?.getRegistrations?.().then(regs => regs.forEach(r => r.unregister()));
     }
   </script>
 
-  <!-- App -->
-  script.js</script>
+  <script src="script.js" type="module"></script>
 </body>
 </html>

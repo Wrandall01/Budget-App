@@ -7,7 +7,7 @@
   <title>Suivi de Budget</title>
 
   <!-- Corrigé : nom exact du fichier CSS -->
-  <link rel="stylesheet" href="style.css
+  <link rel="  <!-- PWA (facultatif) -->
   manifest.json
   <meta name="theme-color" content="#0ea5e9" />
 </head>
@@ -15,7 +15,6 @@
   <header class="app-header">
     <h1>Suivi de Budget</h1>
     <div class="period-picker">
-      <!-- Le code JS crée #yearSelect dynamiquement -->
       <label for="periodSelect">Période :</label>
       <select id="periodSelect" aria-label="Mois"></select>
       <span id="authStatus" class="status-chip">Hors ligne</span>
@@ -55,7 +54,7 @@
     </section>
   </main>
 
-  <!-- Toast / notifications brèves -->
+  <!-- Toast -->
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <!-- ====================== Modales ====================== -->
@@ -145,17 +144,13 @@
   firebase-bootstrap.js</script>
   script.js</script>
 
-  <!-- (Optionnel) Service Worker — active uniquement si tu as /service-worker.js -->
+  <!-- Si tu as un SW, décommente et fournis /service-worker.js -->
   <!--
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
-        try {
-          await navigator.serviceWorker.register('/service-worker.js');
-          console.log('Service Worker enregistré');
-        } catch (e) {
-          console.error('SW échec:', e);
-        }
+        try { await navigator.serviceWorker.register('/service-worker.js'); }
+        catch (e) { console.error('SW échec:', e); }
       });
     }
   </script>

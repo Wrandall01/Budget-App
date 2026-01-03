@@ -4,3 +4,18 @@
 @media (max-width:360px){:root{--donut-size:120px;--small-donut-size:92px}.summary-header,.summary-row{grid-template-columns:minmax(110px,1.4fr) .8fr .8fr .8fr 28px}.details-row{grid-template-columns:86px 1fr 100px 28px}.donut-grid{gap:8px}.small-card{padding:8px}.center .value{font-size:.85rem}}
 @media (max-width:820px){.cards{grid-template-columns:1fr}}
 @media (min-width:821px){.donut-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* Auth actions */
+.auth-actions{ display:flex; gap:8px; align-items:center; }
+
+/* Statut de connexion (si pas déjà présent) */
+.status-chip{
+  background: var(--chip);
+  color: var(--muted);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: .8rem;
+  border: 1px solid var(--border);
+}
+

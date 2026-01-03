@@ -14,7 +14,7 @@
   <!-- Firebase SDK exposé sur window._fb (remplacer la config) -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
+    import { getAuth, setPersistance, browserLocalPersistance, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
     import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
     // 👉 REMPLACE ICI PAR TA CONFIG FIREBASE
@@ -31,6 +31,7 @@
       if (!firebaseConfig.apiKey.includes('REMPLACE')) {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
+        await setPersistence(auth, browserLocalPersistence);
         db = getFirestore(app);
       }
     } catch (e) {

@@ -17,36 +17,42 @@
 }
 
 /* ===== Mobile reflow: stack metrics under title (<= 420px) ===== */
-@media (max-width: 420px) {
-  /* En-tête : 4 colonnes compactes et on retire la dernière (vide) */
-  .summary-header {
-    grid-template-columns: 1.2fr 0.9fr 0.9fr 1fr;
-  }
-  .summary-header > div:last-child { display: none; }
 
-  /* Ligne catégorie en 2 lignes :
-     Ligne 1: titre + kebab
-     Ligne 2: Budget | Dépenses | Restant
+@media (max-width: 420px) {
+  /* Ligne catégorie en 4 rangées :
+     1) titre | kebab
+     2) budget | kebab
+     3) dépenses | kebab
+     4) restant | kebab
+     => le kebab reste en haut à droite, les valeurs s'empilent proprement
   */
   .summary-row {
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-areas:
       "title kebab"
-      "b     s"
-      "r     r";
+      "b     kebab"
+      "s     kebab"
+      "r     kebab";
     row-gap: 6px;
+    padding: 10px;
   }
 
-  .summary-row .title { grid-area: title; }
-  .summary-row > div:nth-of-type(2) { grid-area: b; } /* Budget initial   */
-  .summary-row > div:nth-of-type(3) { grid-area: s; } /* Dépenses imputées*/
-  .summary-row > div:nth-of-type(4) { grid-area: r; } /* Budget restant   */
-  .summary-row .kebab { grid-area: kebab; justify-self: end; }
-
-  .summary-row { padding: 10px; }
-  .summary-row .title { font-weight: 700; }
+  .summary-row .title { grid-area: title; font-weight: 700; }
+  .summary-row > div:nth-of-type(2) { grid-area: b; } /* Budget initial */
+  .summary-row > div:nth-of-type(3) { grid-area: s; } /* Dépenses imputées */
+  .summary-row > div:nth-of-type(4) { grid-area: r; } /* Budget restant */
 }
+
+
+/* Le conteneur du kebab (le dernier enfant direct de .summary-row) occupe la zone "kebab" */
+.summary-row > div:last-child {
+  grid-area: kebab;
+  justify-self: end;
+  align-self: start;
+}
+
+
 
 /* ===== Hide "Mensuel/Annuel" chips on narrow screens ===== */
 @media (max-width: 420px) {

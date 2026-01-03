@@ -157,6 +157,16 @@ const authForm  = document.querySelector('#authForm');
 const authCreate= document.querySelector('#authCreate');
 const authStatus= document.querySelector('#authStatus');
 
+// 🔧 FIX PERSISTENCE FIREBASE (OBLIGATOIRE)
+if (USE_FIREBASE && window._fb?.auth && window._fb?.setPersistence && window._fb?.browserLocalPersistence) {
+  window._fb.setPersistence(
+    window._fb.auth,
+    window._fb.browserLocalPersistence
+  ).catch(err => {
+    console.warn('Persistence Firebase impossible:', err);
+  });
+}
+
 function updateAuthStatus(){
   if(!USE_FIREBASE || !window._fb || !window._fb.auth){ authStatus.textContent='Hors ligne'; return; }
   const u = window._fb.auth.currentUser; authStatus.textContent = u ? (u.email||'Connecté') : 'Non connecté';

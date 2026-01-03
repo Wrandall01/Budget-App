@@ -157,11 +157,6 @@ const authForm  = document.querySelector('#authForm');
 const authCreate= document.querySelector('#authCreate');
 const authStatus= document.querySelector('#authStatus');
 
-// NEW: boutons login / logout
-const loginBtn  = document.querySelector('#loginBtn');
-const logoutBtn = document.querySelector('#logoutBtn');
-
-
 // 🔧 FIX PERSISTENCE FIREBASE (OBLIGATOIRE)
 if (USE_FIREBASE && window._fb?.auth && window._fb?.setPersistence && window._fb?.browserLocalPersistence) {
   window._fb.setPersistence(
@@ -172,22 +167,10 @@ if (USE_FIREBASE && window._fb?.auth && window._fb?.setPersistence && window._fb
   });
 }
 
-
-function updateAuthStatus() {
-  if (!USE_FIREBASE || !window._fb || !window._fb.auth) {
-    if (authStatus) authStatus.textContent = 'Hors ligne';
-    if (loginBtn)  loginBtn.style.display  = 'inline-flex';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    return;
-  }
-  const u = window._fb.auth.currentUser;
-  if (authStatus) authStatus.textContent = u ? (u.email || 'Connecté') : 'Non connecté';
-
-  // NEW: afficher/masquer les boutons
-  if (loginBtn)  loginBtn.style.display  = u ? 'none'        : 'inline-flex';
-  if (logoutBtn) logoutBtn.style.display = u ? 'inline-flex' : 'none';
+function updateAuthStatus(){
+  if(!USE_FIREBASE || !window._fb || !window._fb.auth){ authStatus.textContent='Hors ligne'; return; }
+  const u = window._fb.auth.currentUser; authStatus.textContent = u ? (u.email||'Connecté') : 'Non connecté';
 }
-
 
 async function bindStore(){
   if(!USE_FIREBASE || !window._fb || !window._fb.db || !window._fb.auth?.currentUser){ return; }

@@ -4,3 +4,126 @@
 @media (max-width:360px){:root{--donut-size:120px;--small-donut-size:92px}.summary-header,.summary-row{grid-template-columns:minmax(110px,1.4fr) .8fr .8fr .8fr 28px}.details-row{grid-template-columns:86px 1fr 100px 28px}.donut-grid{gap:8px}.small-card{padding:8px}.center .value{font-size:.85rem}}
 @media (max-width:820px){.cards{grid-template-columns:1fr}}
 @media (min-width:821px){.donut-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* ===== Fix overflow & wraps in summary rows ===== */
+.summary-row .title {
+  min-width: 0;              /* autorise le texte à rétrécir */
+  overflow-wrap: anywhere;   /* casse les mots longs si besoin */
+  word-break: break-word;
+}
+.summary-row div {
+  min-width: 0;              /* évite les colonnes qui forcent la largeur */
+}
+
+/* ===== Mobile reflow: stack metrics under title (<= 420px) ===== */
+@media (max-width: 420px) {
+  /* En-tête : 4 colonnes compactes et on retire la dernière (vide) */
+  .summary-header {
+    grid-template-columns: 1.2fr 0.9fr 0.9fr 1fr;
+  }
+  .summary-header > div:last-child { display: none; }
+
+  /* Ligne catégorie en 2 lignes :
+     Ligne 1: titre + kebab
+     Ligne 2: Budget | Dépenses | Restant
+  */
+  .summary-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "title kebab"
+      "b     s"
+      "r     r";
+    row-gap: 6px;
+  }
+
+  .summary-row .title { grid-area: title; }
+  .summary-row > div:nth-of-type(2) { grid-area: b; } /* Budget initial   */
+  .summary-row > div:nth-of-type(3) { grid-area: s; } /* Dépenses imputées*/
+  .summary-row > div:nth-of-type(4) { grid-area: r; } /* Budget restant   */
+  .summary-row .kebab { grid-area: kebab; justify-self: end; }
+
+  .summary-row { padding: 10px; }
+  .summary-row .title { font-weight: 700; }
+}
+
+/* ===== Hide "Mensuel/Annuel" chips on narrow screens ===== */
+@media (max-width: 420px) {
+  .summary-row .chips { display: none; }
+}
+
+/* ===== Details rows shrink properly (évite débordement) ===== */
+@media (max-width: 420px) {
+  .details-row {
+    grid-template-columns: 0.9fr 1.1fr 0.8fr 32px; /* date | intitulé | montant | kebab */
+    gap: 6px;
+  }
+  .details-row div { min-width: 0; overflow-wrap: anywhere; }
+}
+
+
+/* ===== iOS: empêcher le zoom auto sur les champs ===== */
+.form-row input,
+.form-row select,
+.form-row textarea {
+  font-size: 16px;               /* clé anti-zoom iOS */
+}
+
+/* Renforcement spécifique iOS (Safari mobile) */
+@supports (-webkit-touch-callout: none) {
+  .form-row input,
+  .form-row select,
+  .form-row textarea {
+    font-size: 16px !important;  /* évite les overrides plus haut */
+  }
+}
+
+/* Évite le “gonflement” du texte en zoom */
+html, body {
+  -webkit-text-size-adjust: 100%;
+}
+
+
+/* ===== Donuts grid: alignement propre dans chaque carte ===== */
+.donut-grid {
+  align-items: stretch; /* toutes les cartes même hauteur */
+}
+
+/* Carte petite (titre + donut) : centre horizontalement le donut */
+.small-card {
+  display: grid;                     /* plus robuste que flex dans ce cas */
+  grid-template-rows: auto 1fr;      /* titre, puis le donut prend la place */
+  align-items: start;
+  justify-items: center;             /* centre le donut horizontalement */
+  row-gap: 8px;
+}
+
+/* Le titre reste aligné à gauche (mais la carte centre le donut) */
+.small-card .name {
+  justify-self: start;
+}
+
+/* Le donut est bien carré et centré dans la “case” */
+.small-card .donut {
+  width: var(--small-donut-size);
+  height: var(--small-donut-size);
+  max-width: 100%;
+  aspect-ratio: 1 / 1;               /* garde le ratio si tailles varient */
+  display: grid;
+  place-items: center;               /* centre le contenu (texte “Restant”) */
+  margin: 0;                         /* aucun décalage parasite */
+}
+
+/* Sur écrans très étroits, augmente la régularité d’alignement */
+@media (max-width: 420px) {
+  .donut-grid {
+    grid-template-columns: 1fr;      /* 1 par ligne si besoin */
+    gap: 10px;
+  }
+  .small-card {
+    grid-template-rows: auto 1fr;
+    padding: 10px;
+  }
+}
+

@@ -186,16 +186,16 @@ function closeAuth(){ authModal.classList.add('hidden'); }
 if(USE_FIREBASE && window._fb && window._fb.onAuthStateChanged && window._fb.auth){
   window._fb.onAuthStateChanged(window._fb.auth, async (user)=>{
     updateAuthStatus();
+
     if(user){
+      // ✅ Connecté (y compris après refresh)
+      closeAuth();
       await bindStore();
+    } else {
+      // ❌ Pas connecté
+      openAuth();
     }
   });
-}
-
-if(USE_FIREBASE){
-  // si aucune config, on reste en local
-  if(!window._fb || !window._fb.app){ console.warn('Firebase non configuré. Utilisation du localStorage.'); }
-  else { if(!window._fb.auth?.currentUser){ openAuth(); } }
 }
 
 authForm?.addEventListener('submit', async (e)=>{

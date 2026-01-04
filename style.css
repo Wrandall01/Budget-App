@@ -6,53 +6,11 @@
 @media (min-width:821px){.donut-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 
-/* ===== Fix overflow & wraps in summary rows ===== */
-.summary-row .title {
-  min-width: 0;              /* autorise le texte à rétrécir */
-  overflow-wrap: anywhere;   /* casse les mots longs si besoin */
-  word-break: break-word;
-}
-.summary-row div {
-  min-width: 0;              /* évite les colonnes qui forcent la largeur */
-}
-
-/* ===== Mobile reflow: stack metrics under title (<= 420px) ===== */
-
 
 /* ===== Mobile reflow cohérent (<= 420px) ===== */
 @media (max-width: 420px) {
-  /* En-tête compact et on retire la dernière colonne (vide) */
-  .summary-header {
-    grid-template-columns: 1.2fr 0.9fr 0.9fr 1fr;
-  }
-  .summary-header > div:last-child { display: none; }
 
-  /* Ligne en 4 rangées :
-     1) titre | kebab
-     2) budget | kebab
-     3) dépenses | kebab
-     4) restant | kebab
-  */
-  .summary-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "title kebab"
-      "b     kebab"
-      "s     kebab"
-      "r     kebab";
-    row-gap: 6px;
-    padding: 10px;
-  }
-
-  .summary-row .title { grid-area: title; font-weight: 700; }
-
-  /* Colonne 2 = Budget initial ; 3 = Dépenses ; 4 = Restant */
-  .summary-row > div:nth-of-type(2) { grid-area: b; text-align: right; }
-  .summary-row > div:nth-of-type(3) { grid-area: s; text-align: right; }
-  .summary-row > div:nth-of-type(4) { grid-area: r; text-align: right; }
-
-  /* Cache la pastille "Mensuel/Annuel" en très petit écran */
+  /* Cache la pastille annuelle / mensuelle sur petite écran */
   .summary-row .chips { display: none; }
 }
 
@@ -121,69 +79,4 @@ html, body {
     padding: 10px;
   }
 }
-
-
-/* ===== Containment & spacing ===== */
-.section { 
-  overflow: hidden;          /* contient ombres/bords des cartes */
-}
-.summary-table { 
-  padding: 8px 10px;         /* évite que les cartes collent au bord */
-}
-.summary-row { 
-  margin: 6px 0;             /* régularise l’espacement entre cartes */
-}
-
-
-/* ===== Fix overflow & wraps in summary rows ===== */
-.summary-row .title {
-  min-width: 0;
-  overflow-wrap: anywhere;   /* casse les mots longs si besoin */
-  word-break: break-word;
-}
-.summary-row div {
-  min-width: 0;              /* autorise les colonnes à rétrécir */
-}
-
-
-/* ===== Kebab anchoring ===== */
-
-/* Le conteneur du kebab (dernier div de .summary-row) est le référentiel */
-.summary-row > div:last-child {
-  position: relative;       /* sécurité si non défini */
-}
-
-/* Ancrage en haut-droite du conteneur, sous le bouton */
-.summary-row > div:last-child .kebab-menu {
-  right: 0;                 /* ✅ ancré à droite */
-  left: auto;               /* ✅ ignore left */
-  top: calc(100% + 6px);    /* menu juste sous le bouton */
-  transform-origin: top right;
-}
-
-/* Borne la largeur en mobile pour éviter de sortir de l'écran */
-@media (max-width: 420px) {
-  .summary-row > div:last-child .kebab-menu {
-    max-width: 80vw;
-    overflow-wrap: anywhere;
-  }
-}
-
-
-/* ===== Details rows shrink properly ===== */
-@media (max-width: 420px) {
-  .details-row {
-    grid-template-columns: 0.9fr 1.1fr 0.8fr 32px; /* date | intitulé | montant | kebab */
-    gap: 6px;
-  }
-  .details-row div { 
-    min-width: 0; 
-    overflow-wrap: anywhere; 
-  }
-}
-
-
-
-
-
 

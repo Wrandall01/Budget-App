@@ -18,6 +18,21 @@ let selectedYear, selectedMonth, selectedYM;
 let unsubscribe = null; // Firestore onSnapshot
 
 function loadLocal(){ try{ const raw=localStorage.getItem(LS_KEY); if(!raw) return {months:{},years:{}}; const data=JSON.parse(raw); if(!data.months) data.months={}; if(!data.years) data.years={}; return data; }catch(e){ return {months:{},years:{}}; } }
+/* ====== Restauration période (dernier mois visité) ====== */
+function setInitialMonthYear(){
+  const savedYear  = localStorage.getItem("selectedYear");
+  const savedMonth = localStorage.getItem("selectedMonth");
+
+  if (savedYear && savedMonth) {
+    selectedYear  = parseInt(savedYear, 10);
+    selectedMonth = parseInt(savedMonth, 10);
+  } else {
+    const now = new Date();
+    selectedYear  = now.getFullYear();
+    selectedMonth = now.getMonth() + 1;
+  }
+  selectedYM = ymKey(selectedYear, selectedMonth);
+}
 function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify(store)); }
 
 async function saveCloud(){
@@ -40,7 +55,14 @@ let yearSelect; // créé dynamiquement
   selectedYM   = ymKey(selectedYear, selectedMonth);
 })();
 
-function ensurePeriod(y,m){ const ym=ymKey(y,m); if(!store.months[ym]) store.months[ym]={monthlyCategories:{}}; if(!store.years[y]) store.years[y]={annualCategories:{}}; }
+function ensurePeriod(y,m){ 
+  const ym=ymKey(y,m); 
+  if(!store.months[ym]) store.months[ym]={monthlyCategories:{}}; 
+  if(!store.years[y]) store.years[y]={annualCategories:{}};
+    // mémorisation navigation
+  localStorage.setItem("selectedYear", y);
+  localStorage.setItem("selectedMonth", m);
+}
 function buildYearMonthSelects(){
   if(!document.querySelector('#yearSelect')){ yearSelect=document.createElement('select'); yearSelect.id='yearSelect'; periodPicker.insertBefore(yearSelect, monthSelect); } else { yearSelect=document.querySelector('#yearSelect'); }
   yearSelect.innerHTML=''; for(let y=2026;y<=2100;y++){ const o=document.createElement('option'); o.value=String(y); o.textContent=y; yearSelect.appendChild(o);} yearSelect.value=String(selectedYear);
@@ -174,6 +196,7 @@ async function bindStore(){
     } else {
       store = { months:{}, years:{} };
     }
+    setInitialMonthYear();
     ensurePeriod(selectedYear,selectedMonth);
     saveLocal(); // miroir local
     refreshAll();
@@ -221,6 +244,7 @@ authCreate?.addEventListener('click', async ()=>{
 /* ====== Bootstrap ====== */
 (function init(){
   store = loadLocal();
+  setInitialMonthYear();                // 👈 AJOUT
   ensurePeriod(selectedYear,selectedMonth);
   buildYearMonthSelects();
   refreshAll();

@@ -40,6 +40,20 @@ let yearSelect; // créé dynamiquement
   selectedYM   = ymKey(selectedYear, selectedMonth);
 })();
 
+function setInitialMonthYear(){
+  const savedYear  = localStorage.getItem("selectedYear");
+  const savedMonth = localStorage.getItem("selectedMonth");
+
+  if (savedYear && savedMonth) {
+    selectedYear  = parseInt(savedYear);
+    selectedMonth = parseInt(savedMonth);
+  } else {
+    const now = new Date();
+    selectedYear  = now.getFullYear();
+    selectedMonth = now.getMonth() + 1;
+  }
+}
+
 function ensurePeriod(y,m){ const ym=ymKey(y,m); if(!store.months[ym]) store.months[ym]={monthlyCategories:{}}; if(!store.years[y]) store.years[y]={annualCategories:{}}; }
 function buildYearMonthSelects(){
   if(!document.querySelector('#yearSelect')){ yearSelect=document.createElement('select'); yearSelect.id='yearSelect'; periodPicker.insertBefore(yearSelect, monthSelect); } else { yearSelect=document.querySelector('#yearSelect'); }
@@ -174,6 +188,7 @@ async function bindStore(){
     } else {
       store = { months:{}, years:{} };
     }
+    setInitialMonthYear();
     ensurePeriod(selectedYear,selectedMonth);
     saveLocal(); // miroir local
     refreshAll();
@@ -221,7 +236,8 @@ authCreate?.addEventListener('click', async ()=>{
 /* ====== Bootstrap ====== */
 (function init(){
   store = loadLocal();
-  ensurePeriod(selectedYear,selectedMonth);
+  setInitialMonthYear();          // 👈 AU LIEU de setCurrentMonthYear
+  ensurePeriod(selectedYear, selectedMonth);
   buildYearMonthSelects();
   refreshAll();
 })();
